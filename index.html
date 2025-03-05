@@ -36,6 +36,10 @@
         background: #fff;
         border-radius: 5px;
       }
+      .listening {
+        background-color: red !important;
+        border-color: red !important;
+      }
     </style>
   </head>
   <body>
@@ -48,43 +52,51 @@
     </div>
 
     <script>
-      document.getElementById("start-btn").addEventListener("click", () => {
-        requestMicrophoneAccess().then(() => {
-          startRecognition();
-        }).catch((err) => {
-          alert("Microphone access denied. Please allow microphone access in your browser settings.");
-          console.error("Microphone error: ", err);
-        });
-      });
+      let recognition;
+      const startBtn = document.getElementById("start-btn");
+      const output = document.getElementById("output");
 
-      function requestMicrophoneAccess() {
-        return navigator.mediaDevices.getUserMedia({ audio: true })
-          .then(() => console.log("Microphone access granted"))
-          .catch(err => {
-            console.error("Microphone access denied", err);
-            throw err;
-          });
-      }
-
-      function startRecognition() {
-        if (!("SpeechRecognition" in window || "webkitSpeechRecognition" in window)) {
-          alert("Speech recognition is not supported in this browser. Please use Google Chrome.");
-          return;
-        }
-
-        let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      if (
+        !("SpeechRecognition" in window || "webkitSpeechRecognition" in window)
+      ) {
+        alert(
+          "Speech recognition is not supported in this browser. Please use Google Chrome."
+        );
+      } else {
+        recognition = new (window.SpeechRecognition ||
+          window.webkitSpeechRecognition)();
         recognition.lang = "en-US";
+        recognition.continuous = true; // Keeps listening until manually stopped
+        recognition.interimResults = false; // Only finalize results
 
-        recognition.onresult = function (event) {
-          document.getElementById("output").innerText = event.results[0][0].transcript;
+        recognition.onresult = (event) => {
+          const transcript =
+            event.results[event.results.length - 1][0].transcript;
+          output.innerText += transcript + " ";
         };
 
-        recognition.onerror = function (event) {
+        recognition.onstart = () => {
+          startBtn.innerText = "🎙 Listening... Click to Stop";
+          startBtn.classList.add("listening");
+        };
+
+        recognition.onend = () => {
+          startBtn.innerText = "🎙 Start Listening";
+          startBtn.classList.remove("listening");
+        };
+
+        recognition.onerror = (event) => {
           console.error("Speech recognition error:", event.error);
-          alert("Speech recognition error: " + event.error);
+          alert("Error: " + event.error);
         };
 
-        recognition.start();
+        startBtn.addEventListener("click", () => {
+          if (startBtn.classList.contains("listening")) {
+            recognition.stop();
+          } else {
+            recognition.start();
+          }
+        });
       }
     </script>
   </body>
