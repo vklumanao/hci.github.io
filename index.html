@@ -41,21 +41,47 @@
   <body>
     <div class="card text-center">
       <h2 class="mb-3">Speech to Text</h2>
-      <button class="btn btn-success mb-3" onclick="startRecognition()">
+      <button id="start-btn" class="btn btn-success mb-3">
         🎙 Start Listening
       </button>
       <div id="output" class="p-3"></div>
     </div>
 
     <script>
+      document.getElementById("start-btn").addEventListener("click", () => {
+        requestMicrophoneAccess().then(() => {
+          startRecognition();
+        }).catch((err) => {
+          alert("Microphone access denied. Please allow microphone access in your browser settings.");
+          console.error("Microphone error: ", err);
+        });
+      });
+
+      function requestMicrophoneAccess() {
+        return navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(() => console.log("Microphone access granted"))
+          .catch(err => {
+            console.error("Microphone access denied", err);
+            throw err;
+          });
+      }
+
       function startRecognition() {
-        let recognition = new (window.SpeechRecognition ||
-          window.webkitSpeechRecognition)();
+        if (!("SpeechRecognition" in window || "webkitSpeechRecognition" in window)) {
+          alert("Speech recognition is not supported in this browser. Please use Google Chrome.");
+          return;
+        }
+
+        let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = "en-US";
 
         recognition.onresult = function (event) {
-          document.getElementById("output").innerText =
-            event.results[0][0].transcript;
+          document.getElementById("output").innerText = event.results[0][0].transcript;
+        };
+
+        recognition.onerror = function (event) {
+          console.error("Speech recognition error:", event.error);
+          alert("Speech recognition error: " + event.error);
         };
 
         recognition.start();
