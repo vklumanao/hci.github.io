@@ -18,6 +18,7 @@
         justify-content: center;
         height: 100vh;
         margin: 0;
+        flex-direction: column;
       }
       .card {
         width: 100%;
@@ -26,6 +27,7 @@
         border-radius: 10px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         background: white;
+        text-align: center;
       }
       #output {
         min-height: 100px;
@@ -40,15 +42,39 @@
         background-color: red !important;
         border-color: red !important;
       }
+      .instructions {
+        margin-top: 20px;
+        max-width: 500px;
+        text-align: left;
+        font-size: 16px;
+      }
     </style>
   </head>
   <body>
-    <div class="card text-center">
+    <div class="card">
       <h2 class="mb-3">Speech to Text</h2>
       <button id="start-btn" class="btn btn-success mb-3">
         🎙 Start Listening
       </button>
       <div id="output" class="p-3"></div>
+    </div>
+
+    <div class="instructions">
+      <h4>How to Use:</h4>
+      <ol>
+        <li>Open this page in <strong>Google Chrome</strong>.</li>
+        <li>Click the <strong>"🎙 Start Listening"</strong> button.</li>
+        <li>Start speaking, and your words will appear in the box.</li>
+        <li>
+          Click <strong>"🎙 Listening... Click to Stop"</strong> to stop
+          recording.
+        </li>
+        <li>Copy the text for later use.</li>
+      </ol>
+      <p>
+        <strong>Note:</strong> Ensure your microphone is enabled in browser
+        settings.
+      </p>
     </div>
 
     <script>
@@ -66,8 +92,8 @@
         recognition = new (window.SpeechRecognition ||
           window.webkitSpeechRecognition)();
         recognition.lang = "en-US";
-        recognition.continuous = true; // Keeps listening until manually stopped
-        recognition.interimResults = false; // Only finalize results
+        recognition.continuous = true;
+        recognition.interimResults = false;
 
         recognition.onresult = (event) => {
           const transcript =
